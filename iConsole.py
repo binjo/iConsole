@@ -11,7 +11,6 @@ console rulz...
 """
 
 import os, sys
-import subprocess
 import hashlib
 import pefile, peutils
 import ctypes
