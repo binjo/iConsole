@@ -320,18 +320,25 @@ class ConsoleUI(VmxUI):
         self.ruler        = " "
         self.debug        = debug
 
-    # FIXME awkward assert...
-    def assert_vmrun(self):
+    def assert_vmrun(f):
         """Assert vmrun is properly initialized.
 
         Arguments:
-        - `self`:
+        - `f`:
         """
-        if self.vmrun is None:
-            print "type 'use' first..."
-            return 0
-        else:
-            return 1
+        def check_vmrun(self, *args, **kwargs):
+            """
+
+            Arguments:
+            - `self`:
+            - `*args`:
+            - `**kwargs`:
+            """
+            if self.vmrun is None:
+                print "type 'use' first..."
+            else:
+                f(self, *args, **kwargs)
+        return check_vmrun
 
     def do_use(self, args):
         """use specified vmx file, and initialize vmrun.
@@ -345,6 +352,7 @@ class ConsoleUI(VmxUI):
              self.vmx_pass is not None ):
             self.vmrun = Vmrun( self.vmx, self.vmx_admin, self.vmx_pass, debug=self.debug )
 
+    @assert_vmrun
     def do_vmstart(self, args):
         """
         Start vm
@@ -352,10 +360,11 @@ class ConsoleUI(VmxUI):
         Usage:
             vmstart
         """
-        return self.assert_vmrun() and "".join( self.vmrun.start() )
+        return "".join( self.vmrun.start() )
 
     do_start = do_vmstart
 
+    @assert_vmrun
     def do_vmsuspend(self, args):
         """
         Suspend vm
@@ -363,10 +372,11 @@ class ConsoleUI(VmxUI):
         Usage:
             vmsuspend
         """
-        return self.assert_vmrun() and "".join( self.vmrun.suspend( "hard" ) )
+        return "".join( self.vmrun.suspend( "hard" ) )
 
     do_suspend = do_vmsuspend
 
+    @assert_vmrun
     def do_vmstop(self, args):
         """
         Suspend vm
@@ -374,10 +384,11 @@ class ConsoleUI(VmxUI):
         Usage:
             vmstop
         """
-        return self.assert_vmrun() and "".join( self.vmrun.stop() )
+        return "".join( self.vmrun.stop() )
 
     do_stop = do_vmstop
 
+    @assert_vmrun
     def do_vmcopy(self, args):
         """
         Copy file to vm
@@ -390,11 +401,11 @@ class ConsoleUI(VmxUI):
         if argv == None: return
 
         # TODO change path
-        return self.assert_vmrun() and \
-            "".join( self.vmrun.copyFileFromHostToGuest( argv[0], "\"%s\\%s\"" % (self.cwd_guest, argv[1]) ) )
+        return "".join( self.vmrun.copyFileFromHostToGuest( argv[0], "\"%s\\%s\"" % (self.cwd_guest, argv[1]) ) )
 
     do_cp = do_vmcopy
 
+    @assert_vmrun
     def do_vmget(self, args):
         """
         Get file from vm
@@ -406,12 +417,12 @@ class ConsoleUI(VmxUI):
 
         if argv == None: return
 
-        return self.assert_vmrun() and \
-            "".join( self.vmrun.copyFileFromGuestToHost( "\"%s\\%s\"" % (self.cwd_guest, argv[0]),
-                                                         "%s%s%s" % (self.cwd_host, os.sep, argv[1]) ) )
+        return "".join( self.vmrun.copyFileFromGuestToHost( "\"%s\\%s\"" % (self.cwd_guest, argv[0]),
+                                                            "%s%s%s" % (self.cwd_host, os.sep, argv[1]) ) )
 
     do_get = do_vmget
 
+    @assert_vmrun
     def do_vmsnap(self, args):
         """Snapshot related commands
 
@@ -441,10 +452,11 @@ class ConsoleUI(VmxUI):
 
         if argv == []: print "type 'help [vm]snap' ..."; return
 
-        return self.assert_vmrun() and vmsnap(argv)
+        return vmsnap(argv)
 
     do_snap = do_vmsnap
 
+    @assert_vmrun
     def do_vmexec(self, args):
         """Execute program in the guest
 
@@ -470,7 +482,7 @@ class ConsoleUI(VmxUI):
 
         if argv == []: print "type 'help [vm]exec' ..."; return
 
-        return self.assert_vmrun() and vmexec(argv)
+        return vmexec(argv)
 
     do_exec = do_vmexec
 
